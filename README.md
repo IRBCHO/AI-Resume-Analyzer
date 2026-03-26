@@ -59,7 +59,7 @@ API Gateway → Lambda → Bedrock
 
 ## Status
 
-Still in progress — currently working on backend + Bedrock integration.
+Still in progress : currently working on backend + Bedrock integration.
 
 
 
