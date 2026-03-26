@@ -4,7 +4,7 @@ This project is an AI-powered resume analyzer that compares a resume with a targ
 
 I’m building this to practice real-world cloud + DevOps skills while also exploring how AI (Amazon Bedrock) can be used in practical applications.
 
----
+
 
 ## Why I built this
 
@@ -14,7 +14,6 @@ As someone transitioning into cloud/DevOps, I wanted a project that:
 - includes CI/CD and not just basic deployment
 - touches AI since it’s becoming important in cloud roles
 
----
 
 ## What it does
 
@@ -26,7 +25,7 @@ As someone transitioning into cloud/DevOps, I wanted a project that:
   - skill gaps
   - improvement suggestions
 
----
+
 
 ## Tech stack
 
@@ -37,7 +36,7 @@ As someone transitioning into cloud/DevOps, I wanted a project that:
 - CloudWatch (logs)
 - GitHub Actions (CI/CD)
 
----
+
 
 ## Architecture (simple)
 
@@ -47,7 +46,7 @@ API Gateway → Lambda → Bedrock
 
 (I’ll add a proper diagram soon)
 
----
+
 
 ## What I’m focusing on
 
@@ -56,13 +55,13 @@ API Gateway → Lambda → Bedrock
 - learning more about IAM/security
 - making the project look like something used in real companies
 
----
+
 
 ## Status
 
 Still in progress — currently working on backend + Bedrock integration.
 
----
+
 
 ## Next steps
 
