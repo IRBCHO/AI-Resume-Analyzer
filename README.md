@@ -66,7 +66,6 @@ Still in progress — currently working on backend + Bedrock integration.
 
 ## Next steps
 
-- add frontend (maybe React)
-- support PDF upload
-- improve prompts / output quality
-- add Terraform later
+Right now I’m focused on getting the backend working properly and connecting the app to Amazon Bedrock.
+
+After that, I want to improve the output format, add storage with S3, and set up CI/CD with GitHub Actions. Once the core functionality is stable, I’d like to support PDF uploads, build a simple frontend, and eventually manage the infrastructure with Terraform.
