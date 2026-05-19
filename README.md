@@ -59,11 +59,11 @@ API Gateway → Lambda → Bedrock
 
 ## Status
 
-Core Backend & Bedrock Integration Complete.
+Core Backend & Bedrock Integration Complete. Github Actions CI/CD pipeline fully operational.
 
 
 ## Next steps
 
 Right now I’m focused on getting the backend working properly and connecting the app to Amazon Bedrock.
 
-After that, I want to improve the output format, add storage with S3, and set up CI/CD with GitHub Actions. Once the core functionality is stable, I’d like to support PDF uploads, build a simple frontend, and eventually manage the infrastructure with Terraform.
+After that, I want to improve the output format, add storage with S3. Once the core functionality is stable, I’d like to support PDF uploads, build a simple frontend, and eventually manage the infrastructure with Terraform.
