@@ -2,43 +2,41 @@ import json
 import boto3
 
 def lambda_handler(event, context):
-    # Initialize the Bedrock client
+    # 1. Parse the incoming request body
+    # When API Gateway hits Lambda, the data is inside the 'body' string
+    try:
+        body = json.loads(event.get('body', '{}'))
+        resume_text = body.get('resume', '')
+        jd_text = body.get('jd', '')
+    except Exception:
+        return {'statusCode': 400, 'body': json.dumps({'error': 'Invalid JSON in request'})}
+
+    # 2. Initialize the Bedrock client
     bedrock = boto3.client(service_name='bedrock-runtime', region_name='us-east-1')
-    
-    # Get the resume and job description from the test event or API request
-    resume_text = event.get('resume', '')
-    jd_text = event.get('jd', '')
-    
-    # Construct the prompt for Claude 4.6
+
+    # 3. Construct the prompt
     prompt = f"Analyze this resume against the job description. Provide strengths and gaps.\n\nResume: {resume_text}\n\nJob Description: {jd_text}"
     
     body = json.dumps({
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 1000,
-        "messages": [
-            {
-                "role": "user",
-                "content": [{"type": "text", "text": prompt}]
-            }
-        ]
+        "anthropic_version": "bedrock-2023-05-31", 
+        "max_tokens": 1000, 
+        "messages": [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
     })
 
+    # 4. Invoke Bedrock and return the formatted response
     try:
-        response = bedrock.invoke_model(
-            modelId='us.anthropic.claude-sonnet-4-6',
-            body=body
-        )
-        
+        response = bedrock.invoke_model(modelId='us.anthropic.claude-sonnet-4-6', body=body)
         response_body = json.loads(response.get('body').read())
         analysis = response_body['content'][0]['text']
         
+        # API Gateway REQUIREMENT: You must return status code and headers
         return {
             'statusCode': 200,
+            'headers': {'Content-Type': 'application/json'},
             'body': json.dumps({'analysis': analysis})
         }
-        
     except Exception as e:
         return {
-            'statusCode': 500,
+            'statusCode': 500, 
             'body': json.dumps({'error': str(e)})
         }
