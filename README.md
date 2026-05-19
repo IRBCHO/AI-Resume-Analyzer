@@ -49,6 +49,16 @@ API Gateway → Lambda → Bedrock
 
 (I’ll add a proper diagram soon)
 
+## System Architecture
+
+```mermaid
+graph LR
+    User((User)) -->|Uploads Resume| API[API Gateway]
+    API --> Lambda[AWS Lambda<br/>Python Logic]
+    Lambda --> Bedrock[Amazon Bedrock<br/>Claude 3.5 Sonnet]
+    Lambda --> S3[(S3 Storage)]
+    Lambda --> Result[Analysis Report]
+
 
 
 ## What I’m focusing on
