@@ -1,7 +1,6 @@
 ![Build Status](https://github.com/IRBCHO/AI-Resume-Analyzer/actions/workflows/deploy.yml/badge.svg)
 
 # AI Resume Analyzer (AWS Bedrock + DevOps)
-# AI Resume Analyzer (AWS Bedrock + DevOps)
 
 This project is an AI-powered resume analyzer that compares a resume with a target job description and gives feedback like strengths, skill gaps, and suggestions for improvement.
 
@@ -46,11 +45,11 @@ As someone transitioning into cloud/DevOps, I wanted a project that:
 ```mermaid
 graph LR
     User((User)) -->|Uploads Resume| API[API Gateway]
-    API --> Lambda[AWS Lambda<br/>Python Logic]
-    Lambda --> Bedrock[Amazon Bedrock<br/>Claude 3.5 Sonnet]
+    API --> Lambda[AWS Lambda]
+    Lambda --> Bedrock[Amazon Bedrock]
     Lambda --> S3[(S3 Storage)]
     Lambda --> Result[Analysis Report]
-
+```
 
 
 ## What I’m focusing on
