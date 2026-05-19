@@ -41,15 +41,7 @@ As someone transitioning into cloud/DevOps, I wanted a project that:
 
 
 
-## Architecture (simple)
-
-API Gateway → Lambda → Bedrock  
-                     ↓  
-                     S3  
-
-(I’ll add a proper diagram soon)
-
-## System Architecture
+## Architecture
 
 ```mermaid
 graph LR
