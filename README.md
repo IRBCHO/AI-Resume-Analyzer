@@ -1,73 +1,182 @@
+# AI Resume Analyzer — CI/CD Pipeline with Docker and AWS
+
 ![Build Status](https://github.com/IRBCHO/AI-Resume-Analyzer/actions/workflows/deploy.yml/badge.svg)
 
-# AI Resume Analyzer (AWS Bedrock + DevOps)
+A serverless AI-powered resume analyzer built on AWS, with a full 3-stage CI/CD pipeline using GitHub Actions, Docker, and Amazon ECR.
 
-This project is an AI-powered resume analyzer that compares a resume with a target job description and gives feedback like strengths, skill gaps, and suggestions for improvement.
+Every push to `main` automatically runs tests, builds a Docker container, pushes it to ECR, and deploys it to AWS Lambda.
 
-I’m building this to practice real-world cloud + DevOps skills while also exploring how AI (Amazon Bedrock) can be used in practical applications.
+---
 
+## What It Does
 
+Paste your resume and a job description. The app uses Amazon Bedrock (Claude) to return:
+- Match score (0-100)
+- Strengths
+- Skill gaps
+- Improvement suggestions
+- Verdict (Strong Match, Good Match, Partial Match, or Not a Match)
 
-## Why I built this
+Live demo: [irbcho.github.io/AI-Resume-Analyzer](https://irbcho.github.io/AI-Resume-Analyzer/)
 
-As someone transitioning into cloud/DevOps, I wanted a project that:
-- solves a real problem (job search)
-- uses AWS services in a realistic way
-- includes CI/CD and not just basic deployment
-- touches AI since it’s becoming important in cloud roles
-
-
-## What it does
-
-- Takes a resume + job description
-- Uses AI (Bedrock) to analyze it
-- Returns:
-  - summary
-  - strengths
-  - skill gaps
-  - improvement suggestions
-
-
-
-## Tech stack
-
-- AWS Lambda (Python)
-- Amazon Bedrock
-- API Gateway
-- S3 (for storage)
-- CloudWatch (logs)
-- GitHub Actions (CI/CD)
-
-
+---
 
 ## Architecture
 
-```mermaid
-graph LR
-    User((User)) -->|Uploads Resume| API[API Gateway]
-    API --> Lambda[AWS Lambda]
-    Lambda --> Bedrock[Amazon Bedrock]
-    Lambda --> S3[(S3 Storage)]
-    Lambda --> Result[Analysis Report]
+```
+GitHub Push
+    |
+    v
+GitHub Actions CI/CD Pipeline
+    |
+    |-- Job 1: Run Tests (pytest)
+    |
+    |-- Job 2: Build Docker Image --> Push to Amazon ECR
+    |
+    |-- Job 3: Deploy Container Image --> AWS Lambda
+                                              |
+                                        API Gateway
+                                              |
+                                     Amazon Bedrock (Claude)
 ```
 
+---
 
-## What I’m focusing on
+## Tech Stack
 
-- writing clean backend logic
-- setting up CI/CD properly
-- learning more about IAM/security
-- making the project look like something used in real companies
+| Layer | Technology |
+|---|---|
+| AI / LLM | Amazon Bedrock (Claude Sonnet) |
+| Compute | AWS Lambda (Container Image) |
+| Container Registry | Amazon ECR |
+| API | Amazon API Gateway |
+| CI/CD | GitHub Actions |
+| Containerization | Docker |
+| Testing | pytest |
+| IaC | AWS IAM, ECR, Lambda via CLI |
 
+---
 
+## CI/CD Pipeline
 
-## Status
+The pipeline has 3 jobs that run in sequence on every push to `main`.
 
-Core Backend & Bedrock Integration Complete. Github Actions CI/CD pipeline fully operational.
+### Job 1 — Run Tests
+Installs dependencies and runs 5 unit tests using pytest. If any test fails, the pipeline stops and nothing gets deployed.
 
+Tests cover:
+- CORS preflight (OPTIONS) request handling
+- Missing resume input validation
+- Missing job description input validation
+- Invalid JSON body handling
+- Full valid request with mocked Bedrock response
 
-## Next steps
+### Job 2 — Build and Push to ECR
+Builds a Docker image using the AWS Lambda Python 3.12 base image, tags it with the Git commit SHA for traceability, and pushes it to Amazon ECR. Also tags the image as `latest`.
 
-Right now I’m focused on getting the backend working properly and connecting the app to Amazon Bedrock.
+### Job 3 — Deploy to Lambda
+Updates the Lambda function to run the new container image from ECR, waits for the update to complete, and verifies the deployment.
 
-After that, I want to improve the output format, add storage with S3. Once the core functionality is stable, I’d like to support PDF uploads, build a simple frontend, and eventually manage the infrastructure with Terraform.
+---
+
+## Screenshots
+
+### Pipeline Running — All 3 Jobs Green
+![CI/CD Pipeline Success](screenshots/pipeline-success.png)
+
+### All Workflow Runs Passing
+![GitHub Actions Runs](screenshots/actions-runs.png)
+
+### Docker Image in Amazon ECR
+![ECR Repository](screenshots/ecr-repository.png)
+
+### Lambda Function — Package Type: Image
+![Lambda Image](screenshots/lambda-image.png)
+
+---
+
+## Project Structure
+
+```
+AI-Resume-Analyzer/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml        # CI/CD pipeline definition
+├── tests/
+│   └── test_lambda.py        # Unit tests
+├── Dockerfile                # Container image definition
+├── lambda_function.py        # Lambda handler
+├── requirements.txt          # Python dependencies
+├── index.html                # Frontend
+└── README.md
+```
+
+---
+
+## How to Set This Up
+
+### Prerequisites
+- AWS account
+- GitHub repository
+- Docker installed locally
+- AWS CLI configured
+
+### Step 1 — Create ECR Repository
+
+Go to AWS Console → ECR → Create repository.
+
+Set the name to `resume-analyzer` and leave all other settings as default.
+
+Copy the repository URI. You will need it in Step 4.
+
+### Step 2 — Create IAM User for GitHub Actions
+
+Go to AWS Console → IAM → Users → Create user.
+
+Name it `GitHubActionsDeployer` and attach these policies:
+- `AmazonEC2ContainerRegistryPowerUser`
+- `AWSLambda_FullAccess`
+
+Generate an access key and copy the Access Key ID and Secret Access Key.
+
+### Step 3 — Add GitHub Secrets
+
+Go to your GitHub repository → Settings → Secrets and variables → Actions → New repository secret.
+
+Add these two secrets:
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+
+### Step 4 — Create Lambda Function as Container Image
+
+Go to AWS Console → Lambda → Create function → Container image.
+
+Set the function name to `ResumeAnalyzer` and browse ECR to select your `resume-analyzer` repository. After creating, go to Configuration → Permissions and attach an IAM role with Bedrock access.
+
+### Step 5 — Push to GitHub
+
+```bash
+git add .
+git commit -m "Initial CI/CD pipeline setup"
+git push origin main
+```
+
+Go to the Actions tab and watch all 3 jobs turn green.
+
+---
+
+## What I Learned
+
+- How to containerize a Lambda function using Docker and the AWS Lambda Python base image
+- How to push container images to Amazon ECR using GitHub Actions
+- How to write unit tests with pytest and mock AWS SDK calls
+- How to structure a multi-job CI/CD pipeline where each stage depends on the previous one
+- How to manage IAM permissions for automated deployments
+- The difference between Lambda Zip deployment and Container Image deployment
+
+---
+
+## Author
+
+Irene Cho — [LinkedIn](https://www.linkedin.com/in/irene-b-c) | [Portfolio](https://irbcho.github.io/professionalhub/) | [GitHub](https://github.com/IRBCHO)
+
