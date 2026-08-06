@@ -3,9 +3,7 @@ import sys
 import os
 from unittest.mock import patch, MagicMock
 
-# Add parent directory to path so we can import lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
 import lambda_function
 
 
@@ -46,30 +44,37 @@ def test_invalid_json_returns_400():
 
 @patch("lambda_function.boto3.client")
 def test_valid_request_returns_200(mock_boto_client):
-    """Valid request with mocked Bedrock should return 200 with analysis key."""
+    """Valid request with mocked Bedrock returns full analysis."""
     mock_bedrock = MagicMock()
     mock_boto_client.return_value = mock_bedrock
 
-    # Mock Bedrock response matching the real response structure
     fake_analysis = {
         "score": 85,
+        "verdict": "Good Match",
         "summary": "Strong candidate with AWS experience.",
-        "strengths": ["AWS Lambda", "Python", "Cloud infrastructure"],
-        "gaps": ["Kubernetes", "Terraform", "CI/CD experience"],
-        "suggestions": ["Learn Terraform", "Get Kubernetes certified", "Build CI/CD projects"],
-        "verdict": "Good Match"
+        "strengths": ["AWS Lambda", "Python", "Cloud infra", "CI/CD"],
+        "gaps": ["Kubernetes", "Terraform", "On-call"],
+        "suggestions": ["Learn Terraform", "Get K8s cert", "Add metrics", "Quantify impact"],
+        "keywords": {"matched": ["AWS", "Python"], "missing": ["Kubernetes", "Terraform"]},
+        "ats_score": 72,
+        "ats_tips": ["Add keywords", "Use standard headings", "Remove graphics"],
+        "experience_alignment": {
+            "years_expected": "3-5 years",
+            "years_detected": "4 years",
+            "assessment": "Good fit."
+        },
+        "section_scores": {"skills": 80, "experience": 85, "education": 70, "overall_presentation": 75}
     }
 
     mock_response_body = MagicMock()
     mock_response_body.read.return_value = json.dumps({
         "content": [{"text": json.dumps(fake_analysis)}]
     }).encode()
-
     mock_bedrock.invoke_model.return_value = {"body": mock_response_body}
 
     event = make_event(
-        resume="Experienced cloud engineer with AWS Lambda and Python skills",
-        jd="Looking for a DevOps engineer with AWS and Kubernetes experience"
+        resume="Experienced cloud engineer with AWS Lambda and Python",
+        jd="Looking for a DevOps engineer with AWS and Kubernetes"
     )
 
     response = lambda_function.lambda_handler(event, None)
@@ -77,4 +82,24 @@ def test_valid_request_returns_200(mock_boto_client):
     body = json.loads(response["body"])
     assert "analysis" in body
     assert body["analysis"]["score"] == 85
-    assert body["analysis"]["verdict"] == "Good Match"
+    assert body["analysis"]["ats_score"] == 72
+    assert "matched" in body["analysis"]["keywords"]
+
+
+@patch("lambda_function.boto3.client")
+def test_markdown_wrapped_response(mock_boto_client):
+    """Response wrapped in markdown fences should still parse."""
+    mock_bedrock = MagicMock()
+    mock_boto_client.return_value = mock_bedrock
+
+    fake = {"score": 60, "verdict": "Partial Match", "summary": "Decent.", "strengths": ["Python"], "gaps": ["AWS"], "suggestions": ["Learn AWS"], "keywords": {"matched": ["Python"], "missing": ["AWS"]}, "ats_score": 55, "ats_tips": ["Add keywords"], "experience_alignment": {"years_expected": "2", "years_detected": "1", "assessment": "Under."}, "section_scores": {"skills": 60, "experience": 55, "education": 70, "overall_presentation": 65}}
+
+    wrapped = "```json\n" + json.dumps(fake) + "\n```"
+    mock_response_body = MagicMock()
+    mock_response_body.read.return_value = json.dumps({"content": [{"text": wrapped}]}).encode()
+    mock_bedrock.invoke_model.return_value = {"body": mock_response_body}
+
+    event = make_event(resume="Python dev", jd="AWS engineer needed")
+    response = lambda_function.lambda_handler(event, None)
+    assert response["statusCode"] == 200
+    assert json.loads(response["body"])["analysis"]["score"] == 60
