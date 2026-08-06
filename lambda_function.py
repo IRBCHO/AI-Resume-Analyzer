@@ -36,7 +36,7 @@ def lambda_handler(event, context):
     req = json.dumps({"anthropic_version": "bedrock-2023-05-31", "max_tokens": 1500, "messages": [{"role": "user", "content": [{"type": "text", "text": prompt}]}]})
 
     try:
-        resp = bedrock.invoke_model(modelId='us.anthropic.claude-sonnet-4-6', body=req)
+        resp = bedrock.invoke_model(modelId='anthropic.claude-sonnet-4-20250514', body=req)
         text = json.loads(resp.get('body').read())['content'][0]['text']
         return {'statusCode': 200, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'analysis': json.loads(text)})}
     except Exception as e:
