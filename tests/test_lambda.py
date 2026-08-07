@@ -51,7 +51,7 @@ def test_valid_request_returns_200(mock_boto_client):
     fake_analysis = {
         "score": 85,
         "verdict": "Good Match",
-        "summary": "Strong candidate with AWS experience.",
+        "summary": "You have strong AWS experience that aligns well with this role.",
         "strengths": ["AWS Lambda", "Python", "Cloud infra", "CI/CD"],
         "gaps": ["Kubernetes", "Terraform", "On-call"],
         "suggestions": ["Learn Terraform", "Get K8s cert", "Add metrics", "Quantify impact"],
@@ -63,7 +63,17 @@ def test_valid_request_returns_200(mock_boto_client):
             "years_detected": "4 years",
             "assessment": "Good fit."
         },
-        "section_scores": {"skills": 80, "experience": 85, "education": 70, "overall_presentation": 75}
+        "section_scores": {"skills": 80, "experience": 85, "education": 70, "overall_presentation": 75},
+        "rewritten_bullets": [
+            {"original": "Worked on AWS", "improved": "Architected serverless solutions on AWS Lambda processing 1M+ events daily", "why": "Adds specifics and scale"}
+        ],
+        "tailored_summary": "Cloud engineer with 4 years of AWS experience specializing in serverless.",
+        "interview_prep": {
+            "likely_questions": ["Tell me about your AWS experience"],
+            "talking_points": ["Lambda architecture at scale"],
+            "red_flags": ["Limited Kubernetes exposure"]
+        },
+        "next_steps": ["Add Kubernetes to skills section", "Quantify your Lambda projects", "Include CI/CD tools used"]
     }
 
     mock_response_body = MagicMock()
