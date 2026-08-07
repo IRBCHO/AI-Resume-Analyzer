@@ -80,7 +80,7 @@ JOB DESCRIPTION:
     })
 
     try:
-        resp = bedrock.invoke_model(modelId='us.anthropic.claude-sonnet-4-5-20250514', body=req)
+        resp = bedrock.invoke_model(modelId='us.anthropic.claude-sonnet-4-20250514-v1:0', body=req)
         raw_text = json.loads(resp.get('body').read())['content'][0]['text']
 
         # Clean response - strip any accidental markdown wrapping
