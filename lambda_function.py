@@ -75,12 +75,12 @@ JOB DESCRIPTION:
     bedrock = boto3.client(service_name='bedrock-runtime', region_name='us-east-1')
     req = json.dumps({
         "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 4000,
+        "max_tokens": 2500,
         "messages": [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
     })
 
     try:
-        resp = bedrock.invoke_model(modelId='us.anthropic.claude-sonnet-4-5-20250929-v1:0', body=req)
+        resp = bedrock.invoke_model(modelId='us.anthropic.claude-sonnet-4-6', body=req)
         raw_text = json.loads(resp.get('body').read())['content'][0]['text']
 
         # Clean response - strip any accidental markdown wrapping
