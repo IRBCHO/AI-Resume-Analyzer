@@ -33,31 +33,38 @@ def lambda_handler(event, context):
             'body': json.dumps({'error': 'Resume and job description required'})
         }
 
-    prompt = f"""You are a senior technical recruiter and ATS (Applicant Tracking System) expert.
-Analyze the following resume against the job description with extreme detail.
+    prompt = f"""You are a career coach, senior technical recruiter, and ATS expert helping a job seeker improve their application.
+Analyze the resume against the job description and provide actionable, specific guidance.
 
-Return ONLY a raw JSON object (no markdown, no backticks, start with {{ and end with }}) with these keys:
+Return ONLY a raw JSON object (no markdown, no backticks, start with {{ and end with }}) with ALL of these keys:
 
-1. "score": integer 0-100 representing overall match percentage
+1. "score": integer 0-100 overall match percentage
 2. "verdict": one of "Strong Match", "Good Match", "Partial Match", or "Not a Match"
-3. "summary": 2-3 sentence executive summary of the candidate's fit
-4. "strengths": array of 4-5 specific strengths the candidate has that align with the role
+3. "summary": 2-3 sentence executive summary written directly TO the job seeker (use "you/your")
+4. "strengths": array of 4-5 specific strengths that align with the role
 5. "gaps": array of 3-5 specific skill or experience gaps
-6. "suggestions": array of 4-5 actionable improvement suggestions
-7. "keywords": object with two keys:
+6. "suggestions": array of 4-5 actionable improvement suggestions the job seeker can do THIS WEEK
+7. "keywords": object with:
    - "matched": array of keywords/skills from the JD found in the resume
-   - "missing": array of important keywords/skills from the JD NOT found in the resume
-8. "ats_score": integer 0-100 representing how well the resume would pass an ATS scan for this role
-9. "ats_tips": array of 3-4 specific tips to improve ATS compatibility
+   - "missing": array of important keywords/skills from the JD NOT in the resume
+8. "ats_score": integer 0-100 for ATS compatibility
+9. "ats_tips": array of 3-4 specific ATS improvement tips
 10. "experience_alignment": object with:
-    - "years_expected": string of years expected from JD (or "Not specified")
-    - "years_detected": string of approximate years detected in resume (or "Unable to determine")
-    - "assessment": one sentence assessment of experience level fit
-11. "section_scores": object with scores (0-100) for each resume section:
-    - "skills": integer score for technical skills match
-    - "experience": integer score for work experience relevance
-    - "education": integer score for education fit
-    - "overall_presentation": integer score for resume formatting/clarity
+    - "years_expected": string (or "Not specified")
+    - "years_detected": string (or "Unable to determine")
+    - "assessment": one sentence assessment
+11. "section_scores": object with integer scores 0-100:
+    - "skills", "experience", "education", "overall_presentation"
+12. "rewritten_bullets": array of 3 objects, each with:
+    - "original": a weak bullet point from the resume (or "N/A" if resume has no bullets)
+    - "improved": a rewritten version using strong action verbs and quantified results
+    - "why": one sentence explaining why the improvement is better
+13. "tailored_summary": a 2-3 sentence professional summary rewritten specifically for this job
+14. "interview_prep": object with:
+    - "likely_questions": array of 3 questions the interviewer will likely ask based on the JD
+    - "talking_points": array of 3 things from the resume the candidate should emphasize
+    - "red_flags": array of 1-2 potential concerns the interviewer might raise
+15. "next_steps": array of 3 specific, prioritized actions the job seeker should take right now (most impactful first)
 
 RESUME:
 {resume_text}
@@ -68,7 +75,7 @@ JOB DESCRIPTION:
     bedrock = boto3.client(service_name='bedrock-runtime', region_name='us-east-1')
     req = json.dumps({
         "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 3000,
+        "max_tokens": 4000,
         "messages": [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
     })
 
